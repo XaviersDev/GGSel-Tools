@@ -1,12 +1,14 @@
-
-
-
-
-
-
-
-
-
+// ==UserScript==
+// @name         GGS Tools
+// @namespace    http://tampermonkey.net/
+// @version      2.7.4.2
+// @description  Тулза для сообщений в GGSel
+// @author       XaviersDev
+// @match        https://seller.ggsel.com/messages*
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_addStyle
+// ==/UserScript==
 
 
 
