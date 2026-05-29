@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         GGS Tools
 // @namespace    http://tampermonkey.net/
-// @version      2.7.4.2
+// @version      2.7.5
 // @description  Тулза для сообщений на GGSel
 // @author       XaviersDev
-// @match        https://seller.ggsel.com/messages*
+// @match        https://seller.ggsel.com/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_addStyle
@@ -13,12 +13,11 @@
 (function() {
     'use strict';
 
-    
     const defaultData = {
         isFirstClickDone: false,
         templates: [
             { id: 1, title: 'Привет', text: 'Здравствуйте, (ник)! Чем могу помочь?' },
-            { id: 2, title: 'Оставьте отзыв', text: 'Ваш товар готов, (ник). Спасибо за покупку,оставь отзыв!' }
+            { id: 2, title: 'Оставьте отзыв', text: 'Ваш товар готов, (ник). Спасибо за покупку, оставь отзыв!' }
         ],
         settings: {
             position: 'top',
@@ -27,7 +26,7 @@
             opacity: 0.7,
             textColor: '#00ffcc',
             bgColor: '#141414',
-            autoSend: false 
+            autoSend: false
         }
     };
 
@@ -36,9 +35,8 @@
 
     const saveData = () => GM_setValue('ggs1_tools_data', appData);
 
-    let currentEditId = null; 
+    let currentEditId = null;
 
-    
     function hexToRgba(hex, alpha) {
         let r = parseInt(hex.slice(1, 3), 16),
             g = parseInt(hex.slice(3, 5), 16),
@@ -46,7 +44,6 @@
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    
     function setReactInputValue(inputElement, value) {
         const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeInputValueSetter.call(inputElement, value);
@@ -55,190 +52,95 @@
 
     function getBuyerName() {
         try {
-            const nameEl = document.querySelector('.styles_headerInfo__jj8f0 .styles_username__37KmO');
+            const nameEl = document.querySelector('[class*="headerInfo"] [class*="username"]');
             if (nameEl) return nameEl.childNodes[0].textContent.trim();
         } catch (e) {}
         return "Покупатель";
     }
 
-    
     const svgNoise = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E")`;
 
-    
     GM_addStyle(`
-        /* Кнопка в хедере (Справа от колокольчика) */
-        .ggs-header-btn {
-            background: transparent; border: none; font-weight: 900; cursor: pointer;
-            font-size: 18px; margin: 0 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            letter-spacing: 0.5px; outline: none; z-index: 100; font-family: 'Unbounded', sans-serif;
-        }
+        .ggs-header-btn { background: transparent; border: none; font-weight: 900; cursor: pointer; font-size: 18px; margin: 0 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.5px; outline: none; z-index: 100; font-family: 'Unbounded', sans-serif; }
         .ggs-header-btn.fp-mode { color: #a200ff; text-shadow: 0 0 12px rgba(162,0,255,0.4); }
         .ggs-header-btn.fp-mode:hover { color: #d066ff; text-shadow: 0 0 20px rgba(208,102,255,0.9); transform: scale(1.05); }
         .ggs-header-btn.ggs-mode { color: #00ffcc; text-shadow: 0 0 12px rgba(0,255,204,0.4); }
         .ggs-header-btn.ggs-mode:hover { color: #00ffff; text-shadow: 0 0 20px rgba(0,255,255,0.9); transform: scale(1.05); }
-
-        /* ЭПИЧНЫЕ АНИМАЦИИ */
-        @keyframes ggsEpicShake {
-            0% { transform: translate(2px, 2px) rotate(0deg) scale(1.2); }
-            20% { transform: translate(-3px, -2px) rotate(-3deg) scale(1.3); }
-            40% { transform: translate(3px, -4px) rotate(3deg) scale(1.4); }
-            60% { transform: translate(-3px, 2px) rotate(-3deg) scale(1.5); }
-            80% { transform: translate(2px, 3px) rotate(3deg) scale(1.4); }
-            100% { transform: translate(-2px, -2px) rotate(0deg) scale(1.2); }
-        }
-        @keyframes ggsExplode {
-            0% { transform: scale(1); filter: hue-rotate(0deg) brightness(1); }
-            50% { transform: scale(1.6); filter: hue-rotate(180deg) brightness(2); text-shadow: 0 0 50px red; color: #ff0055;}
-            100% { transform: scale(1); filter: hue-rotate(360deg) brightness(1); }
-        }
+        @keyframes ggsEpicShake { 0% { transform: translate(2px, 2px) rotate(0deg) scale(1.2); } 20% { transform: translate(-3px, -2px) rotate(-3deg) scale(1.3); } 40% { transform: translate(3px, -4px) rotate(3deg) scale(1.4); } 60% { transform: translate(-3px, 2px) rotate(-3deg) scale(1.5); } 80% { transform: translate(2px, 3px) rotate(3deg) scale(1.4); } 100% { transform: translate(-2px, -2px) rotate(0deg) scale(1.2); } }
+        @keyframes ggsExplode { 0% { transform: scale(1); filter: hue-rotate(0deg) brightness(1); } 50% { transform: scale(1.6); filter: hue-rotate(180deg) brightness(2); text-shadow: 0 0 50px red; color: #ff0055;} 100% { transform: scale(1); filter: hue-rotate(360deg) brightness(1); } }
         .ggs-anim-1 { animation: ggsEpicShake 0.1s infinite; color: #ff0055 !important; text-shadow: 0 0 20px #ff0055 !important; font-size: 20px !important; }
         .ggs-anim-2 { animation: ggsEpicShake 0.05s infinite, ggsExplode 0.4s infinite; color: #ff0000 !important; text-shadow: 0 0 40px #ff0000 !important; font-size: 26px !important; text-transform: uppercase; }
-
-        /* ПЛАВАЮЩЕЕ МОДАЛЬНОЕ ОКНО */
-        #ggs-modal-wrapper {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s ease;
-        }
+        #ggs-modal-wrapper { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s ease; }
         #ggs-modal-wrapper.show { opacity: 1; display: block; }
-
-        #ggs-modal {
-            width: 850px; height: 580px; background: #141414; border: 1px solid #333;
-            border-radius: 16px; display: flex; overflow: hidden; color: #eee;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.7); font-family: 'Inter', sans-serif;
-            position: relative;
-        }
-
-        /* ЗОНА ПЕРЕТАСКИВАНИЯ (Драг-зона) */
-        .ggs-drag-zone {
-            position: absolute; top: 0; left: 0; width: 100%; height: 30px;
-            cursor: move; z-index: 5; background: transparent;
-        }
-        /* Меняем курсор на краях */
-        #ggs-modal::before {
-            content: ''; position: absolute; inset: 0; border: 10px solid transparent;
-            cursor: move; pointer-events: none; z-index: 100;
-        }
-
-        .ggs-close-btn {
-            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.05);
-            border: none; color: #888; width: 32px; height: 32px; border-radius: 8px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s; z-index: 20;
-        }
+        #ggs-modal { width: 850px; height: 580px; background: #141414; border: 1px solid #333; border-radius: 16px; display: flex; overflow: hidden; color: #eee; box-shadow: 0 25px 60px rgba(0,0,0,0.7); font-family: 'Inter', sans-serif; position: relative; }
+        .ggs-drag-zone { position: absolute; top: 0; left: 0; width: 100%; height: 30px; cursor: move; z-index: 5; background: transparent; }
+        #ggs-modal::before { content: ''; position: absolute; inset: 0; border: 10px solid transparent; cursor: move; pointer-events: none; z-index: 100; }
+        .ggs-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.05); border: none; color: #888; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 20; }
         .ggs-close-btn:hover { background: #ff4d4f; color: #fff; transform: rotate(90deg); }
         .ggs-close-btn svg { width: 16px; height: 16px; fill: currentColor; }
-
         .ggs-sidebar { width: 240px; background: #0f0f0f; border-right: 1px solid #2a2a2a; padding: 35px 0 20px; z-index: 10; position: relative; }
         .ggs-sidebar-header { padding: 0 25px 20px; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 0.5px; }
-        .ggs-sidebar-btn {
-            width: 100%; padding: 15px 25px; background: transparent; border: none;
-            color: #888; text-align: left; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s;
-        }
+        .ggs-sidebar-btn { width: 100%; padding: 15px 25px; background: transparent; border: none; color: #888; text-align: left; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.2s; }
         .ggs-sidebar-btn:hover { color: #fff; background: rgba(255,255,255,0.02); }
         .ggs-sidebar-btn.active { color: #00ffcc; background: rgba(0,255,204,0.05); border-right: 3px solid #00ffcc; }
-
         .ggs-content { flex: 1; padding: 40px 30px 30px; overflow-y: auto; position: relative; z-index: 10; }
         .ggs-tab-content { display: none; animation: ggsFadeIn 0.3s ease; }
         .ggs-tab-content.active { display: block; }
         @keyframes ggsFadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
         h2.ggs-title { margin: 0 0 5px 0; font-size: 24px; color: #fff; font-weight: 800; }
         p.ggs-subtitle { color: #888; font-size: 13px; margin: 0 0 20px 0; }
-
-        .ggs-input, .ggs-textarea {
-            width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff;
-            padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; outline: none;
-            font-family: inherit; font-size: 14px; transition: 0.2s;
-        }
+        .ggs-input, .ggs-textarea { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; outline: none; font-family: inherit; font-size: 14px; transition: 0.2s; }
         .ggs-input:focus, .ggs-textarea:focus { border-color: #00ffcc; box-shadow: 0 0 0 2px rgba(0,255,204,0.1); }
         .ggs-textarea { resize: vertical; min-height: 80px; }
-
-        .ggs-btn {
-            background: #00ffcc; color: #000; border: none; padding: 12px 20px;
-            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s;
-        }
+        .ggs-btn { background: #00ffcc; color: #000; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; }
         .ggs-btn:hover { background: #00d2ff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,204,0.3); }
         .ggs-btn:active { transform: translateY(0); }
         .ggs-btn-danger { background: rgba(255,77,79,0.1); color: #ff4d4f; padding: 8px 12px; font-size: 12px;}
         .ggs-btn-danger:hover { background: #ff4d4f; color: #fff; }
         .ggs-btn-edit { background: rgba(255,204,0,0.1); color: #ffcc00; padding: 8px 12px; font-size: 12px; margin-right: 5px;}
         .ggs-btn-edit:hover { background: #ffcc00; color: #000; }
-
-        .ggs-tpl-item {
-            background: #111; border: 1px solid #2a2a2a; border-radius: 12px;
-            padding: 15px 20px; margin-bottom: 12px; display: flex; justify-content: space-between;
-            align-items: center; transition: 0.2s;
-        }
+        .ggs-tpl-item { background: #111; border: 1px solid #2a2a2a; border-radius: 12px; padding: 15px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .ggs-tpl-item:hover { border-color: #444; }
         .ggs-tpl-info h4 { margin: 0 0 5px 0; color: #fff; font-size: 16px; font-weight: 600; }
         .ggs-tpl-info p { margin: 0; color: #777; font-size: 13px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Элементы настроек */
         .ggs-control-group { margin-bottom: 25px; }
         .ggs-control-label { display: block; font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-
         .ggs-radio-row { display: flex; gap: 10px; }
-        .ggs-radio-btn {
-            flex: 1; padding: 10px; text-align: center; background: #0a0a0a; border: 1px solid #333;
-            border-radius: 8px; cursor: pointer; color: #888; font-size: 14px; font-weight: 500; transition: 0.2s;
-        }
+        .ggs-radio-btn { flex: 1; padding: 10px; text-align: center; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; cursor: pointer; color: #888; font-size: 14px; font-weight: 500; transition: 0.2s; }
         .ggs-radio-btn:hover { background: #1a1a1a; border-color: #555; }
         .ggs-radio-btn.active { background: rgba(0,255,204,0.1); border-color: #00ffcc; color: #00ffcc; }
-
         .ggs-color-row { display: flex; gap: 15px; align-items: center; }
         .ggs-color-picker { -webkit-appearance: none; border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; background: none; padding: 0; }
         .ggs-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .ggs-color-picker::-webkit-color-swatch { border: 1px solid #444; border-radius: 8px; }
-
         .ggs-slider-container { display: flex; align-items: center; gap: 15px; }
         .ggs-slider { flex: 1; -webkit-appearance: none; height: 6px; background: #333; border-radius: 3px; outline: none; }
         .ggs-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #00ffcc; cursor: pointer; transition: 0.2s; }
         .ggs-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
         .ggs-slider-val { width: 40px; text-align: right; color: #00ffcc; font-weight: 700; }
-
-        /* Переключатель Авто-отправки */
         .ggs-switch-wrapper { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 20px; }
         .ggs-switch { position: relative; width: 40px; height: 20px; background: #333; border-radius: 10px; transition: 0.3s; }
         .ggs-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; }
         .ggs-switch.on { background: #00ffcc; }
         .ggs-switch.on::after { left: 22px; background: #000; }
-
-        /* --- БИНДЫ В ЧАТЕ --- */
         .ggs-binds-container { display: flex; gap: 10px; flex-wrap: wrap; z-index: 10; margin: 0 0 10px 0; }
         .ggs-pos-top { margin-bottom: 12px; width: 100%; order: -1; }
         .ggs-pos-bottom { margin-top: 12px; width: 100%; order: 3; }
         .ggs-pos-left { flex-direction: column; margin-right: 12px; margin-bottom: 0; width: auto; order: -1; }
         .ggs-pos-right { flex-direction: column; margin-left: 12px; margin-bottom: 0; width: auto; order: 3; }
         .ggs-flex-row-hack { display: flex !important; flex-direction: row !important; align-items: flex-end; width: 100%; }
-
-        .ggs-chat-bind {
-            cursor: pointer; outline: none; white-space: nowrap; font-family: 'Inter', sans-serif;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative;
-        }
+        .ggs-chat-bind { cursor: pointer; outline: none; white-space: nowrap; font-family: 'Inter', sans-serif; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; }
         .ggs-chat-bind:hover { transform: translateY(-2px); filter: brightness(1.2); }
         .ggs-chat-bind:active { transform: translateY(1px) scale(0.98); filter: brightness(0.9); }
-
-        /* TOOLTIP (Предпросмотр) */
-        .ggs-chat-bind::after {
-            content: attr(data-preview);
-            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%) translateY(10px);
-            background: rgba(10, 10, 10, 0.9); color: #fff;
-            padding: 10px 14px; border-radius: 8px;
-            font-size: 13px; font-weight: 300; letter-spacing: 0.3px; line-height: 1.4;
-            white-space: pre-wrap; width: max-content; max-width: 320px; text-align: center;
-            opacity: 0; pointer-events: none; transition: all 0.2s ease;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1000;
-        }
+        .ggs-chat-bind::after { content: attr(data-preview); position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(10, 10, 10, 0.9); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 300; letter-spacing: 0.3px; line-height: 1.4; white-space: pre-wrap; width: max-content; max-width: 320px; text-align: center; opacity: 0; pointer-events: none; transition: all 0.2s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 1000; }
         .ggs-chat-bind:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
     `);
 
-    
     function injectHeaderButton() {
+        if (!window.location.pathname.includes('/messages')) return;
         if (document.getElementById('ggs-main-btn')) return;
 
-        const notifBtn = document.querySelector('a.styles_notification__w0Bwt');
+        const notifBtn = document.querySelector('header [class*="notification"]') || document.querySelector('header');
         if (!notifBtn) return;
 
         const btn = document.createElement('button');
@@ -248,7 +150,6 @@
 
         btn.onclick = () => {
             if (!appData.isFirstClickDone) {
-                
                 btn.style.pointerEvents = 'none';
                 btn.classList.add('ggs-anim-1');
                 btn.innerText = "какой нахуй фп";
@@ -275,15 +176,15 @@
             }
         };
 
-        
-        if (notifBtn.nextSibling) {
+        if (notifBtn.tagName && notifBtn.tagName.toLowerCase() === 'header') {
+            notifBtn.appendChild(btn);
+        } else if (notifBtn.nextSibling) {
             notifBtn.parentNode.insertBefore(btn, notifBtn.nextSibling);
         } else {
             notifBtn.parentNode.appendChild(btn);
         }
     }
 
-    
     function createModalUI() {
         if (document.getElementById('ggs-modal-wrapper')) return;
 
@@ -301,12 +202,9 @@
                     <button class="ggs-sidebar-btn" data-tab="tab-settings">🎨 Настройки вида</button>
                 </div>
                 <div class="ggs-content">
-
-                    <!-- ВКЛАДКА: ШАБЛОНЫ -->
                     <div id="tab-templates" class="ggs-tab-content active">
                         <h2 class="ggs-title">Шаблоны быстрых ответов</h2>
                         <p class="ggs-subtitle">Используйте <b>(ник)</b> в тексте для автоматической подстановки.</p>
-
                         <div style="margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a2a2a;">
                             <input type="text" id="ggs-new-tpl-title" class="ggs-input" placeholder="Название кнопки (напр. Привет)">
                             <textarea id="ggs-new-tpl-text" class="ggs-textarea" placeholder="Здравствуйте, (ник)!"></textarea>
@@ -317,17 +215,13 @@
                         </div>
                         <div id="ggs-tpl-list"></div>
                     </div>
-
-                    <!-- ВКЛАДКА: НАСТРОЙКИ ВИДА -->
                     <div id="tab-settings" class="ggs-tab-content">
                         <h2 class="ggs-title">ВНЕШНИЙ ВИД</h2>
                         <p class="ggs-subtitle">Изменения видны сразу</p>
-
                         <div class="ggs-switch-wrapper" id="ggs-autosend-toggle">
                             <div class="ggs-switch ${appData.settings.autoSend ? 'on' : ''}"></div>
                             <span style="color:#fff; font-weight:600;">Отправлять при нажатии</span>
                         </div>
-
                         <div class="ggs-control-group">
                             <span class="ggs-control-label">Расположение кнопок</span>
                             <div class="ggs-radio-row" id="group-pos">
@@ -337,7 +231,6 @@
                                 <div class="ggs-radio-btn ${appData.settings.position === 'right' ? 'active' : ''}" data-val="right">Справа</div>
                             </div>
                         </div>
-
                         <div class="ggs-control-group">
                             <span class="ggs-control-label">Стиль кнопок</span>
                             <div class="ggs-radio-row" id="group-style">
@@ -346,18 +239,15 @@
                                 <div class="ggs-radio-btn ${appData.settings.style === 'glass' ? 'active' : ''}" data-val="glass">Стекло</div>
                             </div>
                         </div>
-
                         <div class="ggs-control-group">
                             <span class="ggs-control-label">Цвета</span>
                             <div class="ggs-color-row">
                                 <input type="color" id="ggs-set-color" class="ggs-color-picker" value="${appData.settings.textColor}">
                                 <span style="color:#aaa; font-size:13px; margin-right:15px;">Текст/Рамка</span>
-
                                 <input type="color" id="ggs-set-bg" class="ggs-color-picker" value="${appData.settings.bgColor}">
                                 <span style="color:#aaa; font-size:13px;">Фон</span>
                             </div>
                         </div>
-
                         <div class="ggs-control-group">
                             <span class="ggs-control-label">Прозрачность фона</span>
                             <div class="ggs-slider-container">
@@ -365,7 +255,6 @@
                                 <span class="ggs-slider-val" id="val-opacity">${appData.settings.opacity}</span>
                             </div>
                         </div>
-
                         <div class="ggs-control-group">
                             <span class="ggs-control-label">Размер</span>
                             <div class="ggs-slider-container">
@@ -373,22 +262,18 @@
                                 <span class="ggs-slider-val" id="val-size">${appData.settings.size}px</span>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         `;
         document.body.appendChild(wrapper);
 
-        
         const modal = document.getElementById('ggs-modal');
         let isDragging = false, dragX = 0, dragY = 0;
 
         modal.addEventListener('mousedown', (e) => {
-            
             if (e.target.closest('button, input, textarea, .ggs-radio-btn, .ggs-switch-wrapper')) return;
             isDragging = true;
-            
             if (wrapper.style.transform !== 'none') {
                 const rect = wrapper.getBoundingClientRect();
                 wrapper.style.transform = 'none';
@@ -405,18 +290,16 @@
         });
         document.addEventListener('mouseup', () => isDragging = false);
 
-        
         document.getElementById('ggs-close-btn').onclick = () => {
             wrapper.classList.remove('show');
             setTimeout(() => wrapper.style.display='none', 300);
         };
 
-        
         const shiftModal = (toCorner) => {
             wrapper.style.transform = 'none';
             if (toCorner) {
                 wrapper.style.top = '30px';
-                wrapper.style.left = 'calc(100vw - 880px)'; 
+                wrapper.style.left = 'calc(100vw - 880px)';
             } else {
                 wrapper.style.top = '50%';
                 wrapper.style.left = '50%';
@@ -432,13 +315,10 @@
                 targetBtn.classList.add('active');
                 const tabId = targetBtn.dataset.tab;
                 document.getElementById(tabId).classList.add('active');
-
-                
                 shiftModal(tabId === 'tab-settings');
             };
         });
 
-        
         const titleInput = document.getElementById('ggs-new-tpl-title');
         const textInput = document.getElementById('ggs-new-tpl-text');
         const addBtn = document.getElementById('ggs-add-tpl-btn');
@@ -458,11 +338,9 @@
             if(!title || !text) return;
 
             if (currentEditId) {
-                
                 const tpl = appData.templates.find(t => t.id === currentEditId);
                 if(tpl) { tpl.title = title; tpl.text = text; }
             } else {
-                
                 appData.templates.push({ id: Date.now(), title, text });
             }
 
@@ -474,14 +352,12 @@
 
         cancelBtn.onclick = resetForm;
 
-        
         const updateSetting = (key, val) => {
             appData.settings[key] = val;
             saveData();
             renderChatBinds();
         };
 
-        
         const autoSendToggle = document.getElementById('ggs-autosend-toggle');
         const switchEl = autoSendToggle.querySelector('.ggs-switch');
         autoSendToggle.onclick = () => {
@@ -492,7 +368,6 @@
             saveData();
         };
 
-        
         document.querySelectorAll('.ggs-radio-btn').forEach(btn => {
             btn.onclick = (e) => {
                 const target = e.target;
@@ -504,11 +379,9 @@
             };
         });
 
-        
         document.getElementById('ggs-set-color').oninput = (e) => updateSetting('textColor', e.target.value);
         document.getElementById('ggs-set-bg').oninput = (e) => updateSetting('bgColor', e.target.value);
 
-        
         document.getElementById('ggs-set-opacity').oninput = (e) => {
             document.getElementById('val-opacity').innerText = e.target.value;
             updateSetting('opacity', e.target.value);
@@ -524,18 +397,13 @@
         renderTemplatesList();
         const wrapper = document.getElementById('ggs-modal-wrapper');
         wrapper.style.display = 'block';
-        
         wrapper.style.top = '50%';
         wrapper.style.left = '50%';
         wrapper.style.transform = 'translate(-50%, -50%)';
-
-        
         document.querySelector('.ggs-sidebar-btn[data-tab="tab-templates"]').click();
-
         setTimeout(() => wrapper.classList.add('show'), 10);
     }
 
-    
     function renderTemplatesList() {
         const list = document.getElementById('ggs-tpl-list');
         if(!list) return;
@@ -556,7 +424,6 @@
             list.appendChild(item);
         });
 
-        
         document.querySelectorAll('.ggs-tpl-item .ggs-btn-danger').forEach(btn => {
             btn.onclick = (e) => {
                 const id = parseInt(e.target.dataset.id);
@@ -567,7 +434,6 @@
             };
         });
 
-        
         document.querySelectorAll('.ggs-tpl-item .ggs-btn-edit').forEach(btn => {
             btn.onclick = (e) => {
                 const id = parseInt(e.target.dataset.id);
@@ -586,10 +452,11 @@
         });
     }
 
-    
     function renderChatBinds() {
-        const inputContainer = document.querySelector('.styles_inputContainer__nAC7C');
-        const footerContainer = document.querySelector('.styles_footerContainer__E_RfM');
+        if (!window.location.pathname.includes('/messages')) return;
+
+        const inputContainer = document.querySelector('[class*="inputContainer"]');
+        const footerContainer = document.querySelector('[class*="footerContainer"]');
 
         if (!inputContainer || !footerContainer) return;
 
@@ -608,7 +475,6 @@
         const s = appData.settings;
         let btnCSS = `font-size: ${s.size}px; padding: 8px 14px; border-radius: 8px; font-weight: 600; `;
 
-        
         if (s.style === 'solid') {
             const bg = hexToRgba(s.bgColor, s.opacity);
             btnCSS += `background-color: ${bg}; color: ${s.textColor}; border: 1px solid transparent;`;
@@ -627,30 +493,29 @@
             `;
         }
 
-        const buyerName = getBuyerName();
-
         appData.templates.forEach(tpl => {
             const btn = document.createElement('button');
             btn.className = 'ggs-chat-bind';
             btn.style.cssText = btnCSS;
             btn.innerText = tpl.title;
 
-            
-            const previewText = tpl.text.replace(/\(ник\)/gi, `@${buyerName}`).replace(/\{ник\}/gi, `@${buyerName}`);
-            btn.setAttribute('data-preview', previewText);
+            btn.onmouseenter = () => {
+                const currentBuyerName = getBuyerName();
+                const previewText = tpl.text.replace(/\(ник\)/gi, `@${currentBuyerName}`).replace(/\{ник\}/gi, `@${currentBuyerName}`);
+                btn.setAttribute('data-preview', previewText);
+            };
 
             btn.onclick = () => {
+                const currentBuyerName = getBuyerName();
                 const textarea = inputContainer.querySelector('textarea');
                 if (textarea) {
-                    const finalMessage = tpl.text.replace(/\(ник\)/gi, buyerName).replace(/\{ник\}/gi, buyerName);
-
+                    const finalMessage = tpl.text.replace(/\(ник\)/gi, currentBuyerName).replace(/\{ник\}/gi, currentBuyerName);
                     const currentVal = textarea.value;
                     const newVal = currentVal ? currentVal + ' ' + finalMessage : finalMessage;
 
                     setReactInputValue(textarea, newVal);
                     textarea.focus();
 
-                    
                     if (appData.settings.autoSend) {
                         setTimeout(() => {
                             const enterEvent = new KeyboardEvent('keydown', {
@@ -665,7 +530,6 @@
             bindsWrapper.appendChild(btn);
         });
 
-        
         if (s.position === 'top' || s.position === 'bottom') {
             footerContainer.style.display = 'flex';
             footerContainer.style.flexDirection = 'column';
@@ -684,10 +548,10 @@
         }
     }
 
-    
     const observer = new MutationObserver(() => {
+        if (!window.location.pathname.includes('/messages')) return;
         injectHeaderButton();
-        const textarea = document.querySelector('.styles_inputContainer__nAC7C textarea');
+        const textarea = document.querySelector('[class*="inputContainer"] textarea');
         const bindsExist = document.getElementById('ggs-binds-wrapper');
         if (textarea && !bindsExist) {
             renderChatBinds();
